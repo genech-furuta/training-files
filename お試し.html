@@ -3,320 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日付選択カレンダー</title>
+    <title>ToDoList</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start; 
-            align-items: center;
-            height: 100vh;
-            margin: 0;
             background-color: #f7f7f7;
-        }
-
-        .calendar {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 20px;
-            background-color: white;
-            width: 350px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .month {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            text-align: center;
-        }
-
-        .days div {
-            padding: 10px;
-            border: 1px solid #4d4d4d;
-            border-radius: 4px;
-        }
-
-        .day-of-week {
-            font-weight: bold;
-        }
-
-        .day {
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        /* カーソルを持ってきたときに背景色が変わる */
-        .day:hover {
-            background-color: #e0e0e0;
-            cursor: pointer;
-        }
-
-        .selected {
-            background-color: lightblue;
-            font-weight: bold;
-        }
-
-        .selected:hover {
-            background-color: lightblue;
-        }
-
-        #selectedDate {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 20px;
-        }
-
-        .select-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .select-container select {
-            padding: 5px;
-            margin: 5px;
-        }
-        .now{
-            background-color: aqua;
-            margin-top: 20px;
-            text-align: center;
-            font-size: 24px;
-        }
-        .now-time{
-            margin-top: 20px;
-            text-align: center;
-            font-size: 17px;
-            background-color: aquamarine;
-        }
-
-        .now-time-calendar{
-            background: rgb(206, 96, 96);
-        }
-
-        .anotherButton-row {
             display: flex;
-            justify-content: flex-end;
-            margin-top: 50px;
-            width: 100%;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
-        
-        .anotherButton{
-            width: auto;
-            margin-right: 50px;
-            height: 50px;
-            font-size: 20px;
-            background-color: #b3b3b3;
-            color: rgb(0, 0, 0);
-            border: black;
+        .button, .another-button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.2s;
         }
-
-        .anotherButton:hover{
-            background-color: #f0f0f0;
+        .button {
+            background-color: blue;
+            color: white;
         }
-
-        .anotherButton:active{
-            background-color: #a8a8a8;
+        .another-button {
+            background-color: #ccc;
         }
-
-        .plan-input {
-            margin-top: 10px;
+        table {
+            border-collapse: separate;
+            border-spacing: 10px;
+            margin-top: 20px;
+            width: 80%;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
             text-align: center;
         }
-
-        .plan-input input {
-            width: 80%;
-            padding: 5px;
-            margin: 5px;
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
         }
-
-        .plan-button {
-            padding: 5px 10px;
-            background-color: #b3b3b3;
+        .delete-button {
+            background-color: red;
+            color: white;
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .plan-button:hover {
-            background-color: #f0f0f0;
-        }
-
-        .plan-list {
-            margin-top: 10px;
-            font-size: 14px;
-            background-color: #f0f0f0;
-            padding: 5px;
+            padding: 5px 10px;
             border-radius: 5px;
         }
-
+        .complete-button {
+            background-color: green;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
     </style>
-</head>
-<body>
-    <div class = "now" id = "now"></div>
-    <div class = "now-time" id = "now-time"></div>
-
-    <div class="calendar">
-        <div class="select-container">
-            <select id="yearSelect" onchange="updateCalendar()">
-                <option value="2023">2023年</option>
-                <option value="2024">2024年</option>
-                <option value="2025">2025年</option>
-            </select>
-            
-            <select id="monthSelect" onchange="updateCalendar()">
-                <option value="0">1月</option>
-                <option value="1">2月</option>
-                <option value="2">3月</option>
-                <option value="3">4月</option>
-                <option value="4">5月</option>
-                <option value="5">6月</option>
-                <option value="6">7月</option>
-                <option value="7">8月</option>
-                <option value="8">9月</option>
-                <option value="9">10月</option>
-                <option value="10">11月</option>
-                <option value="11">12月</option>
-            </select>
-        </div>
-        
-        <div class="header">
-            <span class="month" id="monthName"></span>
-        </div>
-        <div class="days" id="calendarDays"></div>
-        <div id="selectedDate">
-            <span>選択された日付: なし</span>
-        </div>
-    </div>
-
-    <div class = "anotherButton-row">
-        <button class = "anotherButton" onclick = "location.href='index.html';">最初の画面に戻る</button>
-    </div>
-
-    <div class="plan-input" id="planInput" style="display: none;">
-        <input type="text" id="planText" placeholder="予定を入力" />
-        <button class="plan-button" onclick="addPlan()">予定を追加</button>
-        <div id="planList" class="plan-list"></div>
-    </div>
-
     <script>
-        function updateClock(){
-            const currentDate = new Date();
-            let currentHour = currentDate.getHours();
-            let currentMinutes = currentDate.getMinutes();
-            let currentSeconds = currentDate.getSeconds();
-            document.getElementById("now-time").innerHTML = `現在の時刻：${currentHour} : ${currentMinutes} : ${currentSeconds} `;
-            requestAnimationFrame(updateClock);
+        function addKeywordToDoList(event) {
+            event.preventDefault();
+            const keyword = document.getElementById("keyword").value.trim();
+            if (!keyword) {
+                alert("やることを入力してください");
+                return;
+            }
+
+            const table = document.getElementById("keywordTable");
+            const newRow = table.insertRow();
+            const rowId = "row-" + Date.now();
+            newRow.id = rowId;
+            newRow.setAttribute("draggable", "true");
+            newRow.setAttribute("ondragstart", "dragStart(event)");
+
+            const cell = newRow.insertCell(0);
+            cell.textContent = keyword;
+
+            const completeCell = newRow.insertCell(1);
+            const completeButton = document.createElement("button");
+            completeButton.textContent = "完了";
+            completeButton.classList.add("complete-button");
+            completeButton.onclick = function () {
+                markComplete(this);
+            };
+            completeCell.appendChild(completeButton);
+
+            const deleteCell = newRow.insertCell(2);
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "×";
+            deleteButton.classList.add("delete-button");
+            deleteButton.onclick = function () {
+                deleteRow(this);
+            };
+            deleteCell.appendChild(deleteButton);
+
+            saveKeyword(keyword);
+            document.getElementById("keyword").value = "";
+            enableDragAndDrop();
         }
 
-        requestAnimationFrame(updateClock);
+        function saveKeyword(keyword) {
+            const keywords = JSON.parse(localStorage.getItem("keywords")) || [];
+            keywords.push(keyword);
+            localStorage.setItem("keywords", JSON.stringify(keywords));
+        }
 
-        function renderCalendar(month, year) {
-            const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
-            const daysOfWeek = ["日", "月", "火", "水", "木", "金", "土"];
-            const monthName = monthNames[month];
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const totalDays = lastDay.getDate();
-            const firstDayOfWeek = firstDay.getDay(); 
+        function saveAllKeywords() {
+            const rows = document.querySelectorAll("#keywordTable tr");
+            const keywords = [];
+            rows.forEach((row, index) => {
+                if (row.rowIndex === 0) return; // skip header
+                const keyword = row.cells[0]?.textContent;
+                if (keyword) keywords.push(keyword);
+            });
+            localStorage.setItem("keywords", JSON.stringify(keywords));
+        }
 
-            document.getElementById("monthName").textContent = year + "年 " + monthName;
+        function deleteRow(button) {
+            const row = button.closest("tr");
+            const keyword = row.cells[0].textContent;
+            row.remove();
 
-            let daysHTML = '';
-            daysOfWeek.forEach(day => {
-                daysHTML += `<div class="day-of-week">${day}</div>`;
+            let keywords = JSON.parse(localStorage.getItem("keywords")) || [];
+            keywords = keywords.filter(k => k !== keyword);
+            localStorage.setItem("keywords", JSON.stringify(keywords));
+        }
+
+        function markComplete(button) {
+            const row = button.closest("tr");
+            row.style.textDecoration = "line-through";
+            row.cells[1].innerHTML = "";
+            row.cells[2].innerHTML = "";
+        }
+
+        function clearTable() {
+            const table = document.getElementById("keywordTable");
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+            localStorage.removeItem("keywords");
+        }
+
+        function loadKeywords() {
+            const keywords = JSON.parse(localStorage.getItem("keywords")) || [];
+            const table = document.getElementById("keywordTable");
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+
+            keywords.forEach(keyword => {
+                const newRow = table.insertRow();
+                const rowId = "row-" + Date.now() + Math.random();
+                newRow.id = rowId;
+                newRow.setAttribute("draggable", "true");
+                newRow.setAttribute("ondragstart", "dragStart(event)");
+
+                const cell = newRow.insertCell(0);
+                cell.textContent = keyword;
+
+                const completeCell = newRow.insertCell(1);
+                const completeButton = document.createElement("button");
+                completeButton.textContent = "完了";
+                completeButton.classList.add("complete-button");
+                completeButton.onclick = function () {
+                    markComplete(this);
+                };
+                completeCell.appendChild(completeButton);
+
+                const deleteCell = newRow.insertCell(2);
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "×";
+                deleteButton.classList.add("delete-button");
+                deleteButton.onclick = function () {
+                    deleteRow(this);
+                };
+                deleteCell.appendChild(deleteButton);
             });
 
-            for (let i = 0; i < firstDayOfWeek; i++) {
-                daysHTML += `<div></div>`;
-            }
+            enableDragAndDrop();
+        }
+
+        function enableDragAndDrop() {
+            const rows = document.querySelectorAll("#keywordTable tr");
+            rows.forEach(row => {
+                if (row.rowIndex === 0) return; // skip header
+                row.setAttribute("draggable", "true");
+                row.addEventListener("dragstart", dragStart);
+            });
+        }
+
+        function dragStart(event) {
+            event.dataTransfer.setData("text/plain", event.target.id);
+        }
+
+        // function drop(event) {
+        //     event.preventDefault();
+        //     const draggedId = event.dataTransfer.getData("text/plain");
+        //     const draggedRow = document.getElementById(draggedId);
+        //     const targetRow = event.target.closest("tr");
+
+        //     console.log(targetRow.rowIndex);
+        //     if (!targetRow || draggedRow === targetRow || targetRow.rowIndex === 0) return;
+
+        //     const table = document.getElementById("keywordTable");
+        //     const tbody = table.tBodies[0];
+        //     //tbody.insertBefore(draggedRow, targetRow);
+
+        //     // //table.insertBefore(draggedRow, targetRow.nextSibling);
             
-            for (let i = 1; i <= totalDays; i++) {
-                daysHTML += `<div class="day" data-day="${i}" onclick="selectDate(${i})">${i}</div>`;
-            }
-            
-            document.getElementById("calendarDays").innerHTML = daysHTML;
+        //     // 安全な nextSibling を取得
+        //     let nextSibling = targetRow.nextElementSibling;
+        //     console.log(nextSibling.rowIndex);
+        //     console.log(targetRow.nextSibling.rowIndex);
 
-            let todayElement = null;
-            if(year == currentYear && month == currentMonth){
-                todayElement = document.querySelector(`.day[data-day="${currentDay}"]`);
+        //     if (nextSibling === null) {
+        //         tbody.appendChild(draggedRow);
+        //     } else {
+        //         if (draggedRow.rowIndex < targetRow.rowIndex) {
+        //             tbodyq.insertBefore(draggedRow, nextSibling);
+        //         } else {
+        //             // nextSibling が存在する場合、その前に insert
+        //             tbody.insertBefore(draggedRow, targetRow);
+        //         }
+
+        //         //table.insertBefore(draggedRow, targetRow);
+        //     }
+                
+        //     saveAllKeywords();
+        // }
+
+        function drop(event) {
+            event.preventDefault();
+
+            const draggedId = event.dataTransfer.getData("text/plain");
+            const draggedRow = document.getElementById(draggedId);
+            const targetRow = event.target.closest("tr");
+
+            if (!targetRow || draggedRow === targetRow || targetRow.rowIndex === 0) return;
+
+            const table = document.getElementById("keywordTable");
+            const tbody = table.tBodies[0];
+
+            let nextSibling = targetRow.nextElementSibling;
+
+            //ターゲットの末尾に行が存在しなかったとき
+            if (!nextSibling) {
+                console.log("ドロップ先の次の行がありません。最後に追加。");
+                tbody.appendChild(draggedRow);
+            }
+            // targetRow がヘッダーの直後なら、先頭（最初のデータ行）の前に挿入
+            else if (targetRow.rowIndex === 1) {
+                console.log("target.low:",targetRow.rowIndex);
+                tbody.insertBefore(draggedRow, targetRow);
+                console.log("一番最初に追加");
+            }
+            //通常
+            else {
+                let index = nextSibling.rowIndex;
+                console.log("次の行のインデックスは", index);
+                tbody.insertBefore(draggedRow, nextSibling);
             }
 
-            if(todayElement){
-                todayElement.classList.add("now-time-calendar");
-            }
+            saveAllKeywords();
         }
 
-        const currentDate = new Date();
-        let currentMonth = currentDate.getMonth(); 
-        let currentYear = currentDate.getFullYear();
-        let currentDay = currentDate.getDate();
-        document.getElementById("now").innerHTML = `現在の日付：${currentYear}年${currentMonth + 1}月${currentDay}日`;
 
-        renderCalendar(currentMonth, currentYear);
 
-        let selectedDay = null;
-        function selectDate(day) {
-            if (selectedDay) {
-                selectedDay.classList.remove("selected");
-            }
-
-            selectedDay = document.querySelector(`.day[data-day="${day}"]`);
-            selectedDay.classList.add("selected");
-
-            document.getElementById("selectedDate").innerHTML = `選択された日付: ${day}日`;
-
-            document.getElementById("planInput").style.display = "block";
-            currentSelectedDay = day;
-            showPlans(day);
+        function allowDrop(event) {
+            event.preventDefault();
         }
 
-        function addPlan() {
-            const planText = document.getElementById("planText").value;
-            if (planText) {
-                let plans = JSON.parse(localStorage.getItem("plans")) || {};
-                if (!plans[currentSelectedDay]) {
-                    plans[currentSelectedDay] = [];
-                }
-                plans[currentSelectedDay].push(planText);
-                localStorage.setItem("plans", JSON.stringify(plans));
-                showPlans(currentSelectedDay);
-                document.getElementById("planText").value = ""; 
-            }
-        }
-
-        function showPlans(day) {
-            const plans = JSON.parse(localStorage.getItem("plans")) || {};
-            let planList = document.getElementById("planList");
-            planList.innerHTML = '';
-
-            if (plans[day]) {
-                plans[day].forEach(plan => {
-                    const planItem = document.createElement("div");
-                    planItem.textContent = plan;
-                    planList.appendChild(planItem);
-                });
-            }
-        }
-
-        function updateCalendar() {
-            const selectedYear = parseInt(document.getElementById("yearSelect").value);
-            const selectedMonth = parseInt(document.getElementById("monthSelect").value);
-            renderCalendar(selectedMonth, selectedYear);
-        }
+        window.onload = function () {
+            loadKeywords();
+        };
     </script>
+</head>
+<body>
+    <h1 style="color: aqua;">TodoList</h1>
+    <form onsubmit="addKeywordToDoList(event)">
+        <label for="keyword">やること：</label>
+        <input type="text" id="keyword" placeholder="やることを入力">
+        <button class="button" type="submit">追加</button>
+    </form>
+
+    <h2>やることリスト</h2>
+    <table id="keywordTable" border="1" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <thead>
+            <tr>
+                <th>やることリスト</th>
+                <th>完了</th>
+                <th>削除</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <button class="button" onclick="clearTable()">すべてのリストを削除</button>
+
+    <div class="another-button-row">
+        <button class="another-button" onclick="location.href='index.html'">最初の画面に戻る</button>
+    </div>
 </body>
 </html>

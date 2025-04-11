@@ -38,7 +38,29 @@
                         cell.textContent = keyword;
                         row.appendChild(cell);
                         table.appendChild(row);
+
+                        //完了ボタンの追加
+                        var completeCell = newRow.insertCell(1);
+                        var completeButton = document.createElement("button");
+                        completeButton.textContent = "完了";
+                        completeButton.classList.add("complete-button");
+                        completeButton.onclick = function () {
+                            markComplete(this);
+                        };
+                        completeCell.appendChild(completeButton);
+
+                        // 削除ボタンを追加
+                        var deleteCell = newRow.insertCell(2);
+                        var deleteButton = document.createElement("button");
+                        deleteButton.textContent = "×";
+                        deleteButton.classList.add("delete-button");
+                        deleteButton.onclick = function () {
+                            deleteRow(this);
+                        };
+                        deleteCell.appendChild(deleteButton);
+
                     });
+
                 }
             }
 
@@ -224,7 +246,7 @@
                 var table = document.getElementById("keywordTable");
                 var rows = table.getElementsByTagName("tr");
 
-                while(rows.length > 1){
+                while(rows.length > 0){
                     table.deleteRow(1);
                 }
                 localStorage.removeItem("keywords");
