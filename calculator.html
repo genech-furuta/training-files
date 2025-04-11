@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡単な電卓</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+
+        .calculator {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column; /* 子要素を縦方向に並べる */
+            justify-content: flex-end; /* 子要素を下端に配置 */
+        }
+
+
+        .display {
+            width: 240px;
+            height: 50px;
+            text-align: right;
+            font-size: 24px;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .anotherButton-row {
+            display: flex;
+            justify-content: center;
+            margin-top: 500px;
+        }
+
+        /*電卓のボタン*/
+        .button {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        /*そのほかのボタン*/
+        .anotherButton{
+            width: 200px;
+            height: 50px;
+            font-size: 20px;
+            background-color: #b3b3b3;
+            color: rgb(0, 0, 0);
+            border: black;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        .button:active {
+            background-color: #1c658c;
+        }
+
+
+        .equal-button {
+            background-color: #2ecc71;
+        }
+
+        .clear-button {
+            background-color: #e74c3c;
+        }
+
+        .equal-button:hover, .clear-button:hover {
+            background-color: #27ae60;
+        }
+
+        .equal-button:active, .clear-button:active {
+            background-color: #1d6c4d;
+        }
+
+        .anotherButton:hover{
+            background-color: #f0f0f0;
+        }
+
+        .anotherButton:active{
+            background-color: #a8a8a8;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <input type="text" class="display" id="display" disabled>
+
+        <div class="button-row">
+            <button class="button" onclick="appendToDisplay('7')">7</button>
+            <button class="button" onclick="appendToDisplay('8')">8</button>
+            <button class="button" onclick="appendToDisplay('9')">9</button>
+            <button class="button" onclick="appendToDisplay('/')">/</button>
+        </div>
+        <div class="button-row">
+            <button class="button" onclick="appendToDisplay('4')">4</button>
+            <button class="button" onclick="appendToDisplay('5')">5</button>
+            <button class="button" onclick="appendToDisplay('6')">6</button>
+            <button class="button" onclick="appendToDisplay('*')">*</button>
+        </div>
+        <div class="button-row">
+            <button class="button" onclick="appendToDisplay('1')">1</button>
+            <button class="button" onclick="appendToDisplay('2')">2</button>
+            <button class="button" onclick="appendToDisplay('3')">3</button>
+            <button class="button" onclick="appendToDisplay('-')">-</button>
+        </div>
+        <div class="button-row">
+            <button class="button" onclick="appendToDisplay('0')">0</button>
+            <button class="button" onclick="appendToDisplay('.')">.</button>
+            <button class="button equal-button" onclick="calculate()">=</button>
+            <button class="button" onclick="appendToDisplay('+')">+</button>
+        </div>    
+        <div class="button-row">
+            <button class="button clear-button" onclick="clearDisplay()">C</button>
+        </div>    
+        
+        
+    </div>    
+    
+    <div class="anotherButton-row">
+        <button class="anotherButton" onclick = "location.href = 'index.html';">最初の画面に戻る</button>
+    </div>
+    
+    <script>
+        // 表示エリアを取得要素を取得し、その要素をdis//display:計算結果や入力内容を表示するエリア//JavaScripと@lyt情報
+        const display = document.getElementById('display');
+
+        // 数字や記号を表示に追加
+        function appendToDisplay(value) {//display.vale:表示エリアの現在の値//指定された数字や記号
+            display.value += value;
+        }    
+
+        // 表示をクリア
+        function clearDisplay() {
+            display.value = '';
+        }
+
+        // 計算を実行
+        function calculate() {
+            try {評価する関数
+                display.value = eval(display.value); // eval関数で計算
+            } catch (error) {
+                display.value = 'エラー'; // エラーがあれば表示
+            }    
+        }    
+    </script>        
+</body>
+</html>

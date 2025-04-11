@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My test page</title>
+    <script>
+        //キーワードリストをlocalStorageから取得して表示
+        window.onload = function(){
+            loadKeywords();
+        };  
+
+        // キーワードをテーブルに追加する関数
+        function addKeywordToTable(event) {
+            //ユーザが入力したキーワードを取得
+            var keyword = document.getElementById("keyword").value;
+
+            //入力が空でないとき
+            if (keyword.trim() !== "") {    //trim()：入力された前後の空白を取り除くメソッド
+                var table = document.getElementById("keywordTable");
+                var newRow = table.insertRow(); //新しい行をテーブルに追加
+                var cell = newRow.insertCell(0);    //新しく追加された行に1つ目のセルを挿入
+                cell.textContent = keyword; //キーワード表示
+
+                // 削除ボタンを追加
+                var deleteCell = newRow.insertCell(1);  //2番目のセルを追加
+                var deleteButton = document.createElement("button");    //buttonタグを作成
+                deleteButton.textContent = "×";
+                deleteButton.classList.add("delete-button");    //ボタンにクラスを追加
+                deleteButton.onclick = function () {
+                    deleteRow(this);    //ボタンクリック時に行を削除
+                };
+                deleteCell.appendChild(deleteButton);   //セルにボタンを追加
+
+                
+                //キーワードをlocalStoraogeに保存
+                saveKeyword(keyword);
+                
+                //キーワードの入力フィールドを空
+                document.getElementById("keyword").value = "";
+            } else {
+                alert("キーワードを入力してください！");
+            }
+            
+            event.preventDefault();  // フォーム送信を防止
+        }
+        
+        //キーワードをLocalStorageに保存
+        function saveKeyword(keyword){
+            var keywords = JSON.parse(localStorage.getItem("keywords")) || [];
+            keywords.push(keyword); //新しいキーワードを配列keywordsに追加
+            //更新されたキーワードを再びlocalStorageに保存
+            //JSON.stringify()は配列を文字列に変換
+            localStorage.setItem("keywords", JSON.stringify(keywords));
+        }
+        
+        // キーワードをテーブルから削除
+        function deleteRow(button) {
+            var row = button.parentElement.parentElement; // ボタンの親要素の親（行）を取得
+            //削除するキーワードを行の一番目のセルrow.cell[0]から取得
+            var keyword = row.cells[0].textContent;
+            
+            //行を削除
+            row.parentElement.removeChild(row); 
+            
+            //localStorageから削除
+            var keywords = JSON.parse(localStorage.getItem("keywords")) || [];
+            //削除するインデックスを取得
+            //indexOf()：配列の中から指定した値が最初に現れる位置(インデックス)を返す
+            //値が配列内に存在しない場合は-1を返す
+            var index = keywords.indexOf(keyword);  //削除するインデックスを取得
+            
+            if(index !== -1){
+                //splice()：配列から要素を削除・追加するメソッド
+                //splice(index(削除・追加する要素の位置),削除する要素の個数)
+                keywords.splice(index,1); //キーワードを削除
+                localStorage.setItem("keywords", JSON.stringify(keywords)); //更新されたデータを保存
+            }
+        }
+        
+        //ページが読み込まれたときにlocalStorageからキーワードを読み込む
+        function loadKeywords(){
+            var keywords = JSON.parse(localStorage.getItem("keywords")) || [];
+            var table = document.getElementById("keywordTable");
+            
+            //キーワードがあればテーブルに追加
+            //取得したキーワードリストをループし，それぞれのキーワードをテーブルに追加
+            keywords.forEach(function(keyword){
+                var newRow = table.insertRow();
+                var cell = newRow.insertCell(0);    //各キーワードを新しい行に追加
+                cell.textContent = keyword;
+                
+                // 削除ボタンを追加
+                var deleteCell = newRow.insertCell(1);  //2番目のセルを追加
+                var deleteButton = document.createElement("button");    //buttonタグを作成
+                deleteButton.textContent = "×";
+                deleteButton.classList.add("delete-button");    //ボタンにクラスを追加
+                deleteButton.onclick = function () {
+                    deleteRow(this);    //ボタンクリック時に行を削除
+                };
+                deleteCell.appendChild(deleteButton);   //セルにボタンを追加
+
+            });
+        }
+
+        // テーブルを一気にクリアする関数
+        function clearTable() {
+            var table = document.getElementById("keywordTable");
+            var rows = table.getElementsByTagName("tr");    //行のタグの名前を取得
+
+            // 最初の行（ヘッダー行）を除いて、残りの行を削除
+            while (rows.length > 1) {
+                table.deleteRow(1);
+            }
+
+            //localStorageからキーワードを削除
+            localStorage.removeItem("keywords");
+        }
+    </script>
+
+    <style>
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .button {
+            width: 200px;
+            height: 50px;
+            font-size: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 10px;
+            margin: 10px;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .delete-button{
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            background-color: #969696;
+            color: rgb(0, 0, 0);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 10px;
+            margin: 10px;
+        }
+
+        .delete-button:hover{
+            background-color: #ff6b6b;
+        }
+
+        .delete-button:active{
+            background-color: #ff0000;
+        }
+
+        .anotherButton-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 50px;
+        }
+
+        .anotherButton{
+            width: 200px;
+            height: 50px;
+            font-size: 20px;
+            background-color: #b3b3b3;
+            color: rgb(0, 0, 0);
+            border: black;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+
+        .anotherButton:hover{
+            background-color: #f0f0f0;
+        }
+
+        .anotherButton:active{
+            background-color: #a8a8a8;
+        }
+
+        input[type="text"] {
+            width: 300px;
+            height: 40px;
+            font-size: 20px;
+            padding: 10px;
+            border: 3px solid #4CAF50;
+            border-radius: 10px;
+            background-color: #f0f8ff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            outline: none;
+        }
+        input[type="text"]:focus {
+            border-color: #008C00;
+            background-color: #e0f7fa;
+            box-shadow: 0 4px 8px rgba(0, 128, 0, 0.3);
+        }
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: green;
+            font-size: 18px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        td {
+            font-size: 16px;
+        }
+        caption {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>キーワード入力してリスト化</h1>
+    <form onsubmit="addKeywordToTable(event);">
+        <label for="keyword">キーワード：</label>
+        <input type="text" id="keyword" name="keyword" placeholder="キーワード入力">
+        <div class="button-row">
+            <button class="button" type="submit">追加</button>
+        </div>
+    </form>
+
+    <h2>キーワードリスト</h2>
+    <table id="keywordTable" border="1">
+        <thead>
+            <tr>
+                <th>キーワード</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <div class="button-row">
+        <button class="button" onclick="clearTable()">テーブルをクリア</button>
+    </div>
+    
+    <div class="anotherButton-row">
+        <button class="anotherButton" onclick = "location.href = 'index.html';">最初の画面に戻る</button>
+    </div>
+    
+</body>
+</html>

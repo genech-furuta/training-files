@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset = "UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>ToDoList</title>
+
+        <script>
+            function saveAllKeywords() {
+                const table = document.getElementById("keywordTable");
+                const rows = table.getElementsByTagName("tr");
+                const keywords = [];
+
+                for (let i = 0; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName("td");
+                    if (cells.length > 0) {
+                        keywords.push(cells[0].innerText);  // 例えば、最初のセルの内容を保存
+                    }
+                }
+
+                // 保存されたキーワードをlocalStorageに保存
+                localStorage.setItem("keywords", JSON.stringify(keywords));
+            }
+
+            function loadKeywords() {
+                const keywords = JSON.parse(localStorage.getItem("keywords"));
+                if (keywords && keywords.length > 0) {
+                    const table = document.getElementById("keywordTable");
+                    
+                    // テーブルの内容をリセット
+                    table.innerHTML = '';
+
+                    // 取得したキーワードでテーブルを再構築
+                    keywords.forEach(keyword => {
+                        const row = document.createElement("tr");
+                        const cell = document.createElement("td");
+                        cell.textContent = keyword;
+                        row.appendChild(cell);
+                        table.appendChild(row);
+                    });
+                }
+            }
+
+            function enableDragAndDrop() {
+                const table = document.getElementById("keywordTable");
+                const rows = table.getElementsByTagName("tr");
+
+                for (let i = 0; i < rows.length; i++) {
+                    rows[i].setAttribute("draggable", "true");
+                    rows[i].addEventListener("dragstart", function(event) {
+                        event.dataTransfer.setData("text", i);
+                    });
+                    rows[i].addEventListener("dragover", function(event) {
+                        event.preventDefault();
+                    });
+                    rows[i].addEventListener("drop", drop);
+                }
+            }
+
+            function drop(event) {
+                event.preventDefault();
+                var data = event.dataTransfer.getData("text");
+                var draggedRow = document.getElementsByTagName("tr")[data];
+                var targetRow = event.target.closest("tr");
+
+                // targetRow が存在することを確認
+                if (!targetRow || draggedRow === targetRow) return;
+
+                var table = document.getElementById("keywordTable");
+                var nextSibling = targetRow.nextSibling;
+
+                while (nextSibling && nextSibling.nodeType !== 1) {
+                    nextSibling = nextSibling.nextSibling;
+                }
+
+                if (nextSibling === null) {
+                    table.appendChild(draggedRow);
+                } else {
+                    if (draggedRow.rowIndex < targetRow.rowIndex) {
+                        table.insertBefore(draggedRow, nextSibling);
+                    } else {
+                        table.insertBefore(draggedRow, targetRow);
+                    }
+                }
+
+                // 並び順をlocalStorageに保存
+                saveAllKeywords();
+            }
+
+            window.onload = function() {
+                loadKeywords();            // localStorage からリストを読み込む
+                enableDragAndDrop();       // ドラッグ＆ドロップを有効にする
+            };
+
+
+            //やることをテーブルに追加する関数
+            function addKeywordToDoList(event){
+                //ユーザが入力したキーワードを取得
+                var keyword = document.getElementById("keyword").value;
+
+                //入力が空でないとき
+                if(keyword.trim() !== ""){
+                    var table = document.getElementById("keywordTable");
+                    var newRow = table.insertRow();
+                    var cell = newRow.insertCell(0);
+                    cell.textContent = keyword; //キーワードの表示
+
+                    //ドラッグ＆ドロップ用に属性を追加
+                    //draggable=trueは要素がユーザによってドラッグができることを意味する
+                    //特定のHTML要素はdraggable属性を使ってドラッグを有効にできる
+                    newRow.setAttribute("draggable", "true");
+                    //newRowにondragstart属性を設定し，ドラッグ操作が開始されたときに呼び出される関数を指定
+                    //dragStart(event)はドラッグ開始時に実施される関数
+                    newRow.setAttribute("ondragstart", "dragStart(event)");
+
+                    //完了ボタンの追加
+                    var completeCell = newRow.insertCell(1);   
+                    var completeButton = document.createElement("button");
+                    completeButton.textContent = "完了"
+                    completeButton.classList.add("complete-button");
+                    completeButton.onclick = function(){
+                        markComplete(this); //完了ボタンが押されたら斜線を引く
+                    };
+                    //完了ボタンを新しいセルに追加
+                    completeCell.appendChild(completeButton);
+
+                    //削除ボタンの追加
+                    var deleteCell = newRow.insertCell(2);  //3番目のセルを追加
+                    var deleteButton = document.createElement("button");
+                    deleteButton.textContent = "×"
+                    deleteButton.classList.add("delete-button");
+                    deleteButton.onclick = function(){
+                        deleteRow(this);    //削除ボタンが押されたら削除する
+                    };
+                    deleteCell.appendChild(deleteButton);
+
+                    //キーワードをlocalStorageに保存
+                    saveKeyword(keyword);
+                    //キーワードの入力フィールドをから
+                    document.getElementById("keyword").value = "";
+                }else{
+                    alert("やることを入力してください");
+                }
+                event.preventDefault();
+            }
+
+            //キーワードをlocalStorageに保存
+            function saveKeyword(keyword){
+                var keywords = JSON.parse(localStorage.getItem("keywords")) || [];
+                keywords.push(keyword);
+                localStorage.setItem("keywords" , JSON.stringify(keywords));
+            }
+
+            //キーワードをテーブルから削除
+            function deleteRow(button) {
+            var row = button.parentElement.parentElement;
+            var keyword = row.cells[0].textContent;
+            
+            row.parentElement.removeChild(row); 
+            
+            var keywords = JSON.parse(localStorage.getItem("keywords")) || [];
+            var index = keywords.indexOf(keyword);
+            if(index !== -1){
+                keywords.splice(index,1);
+                localStorage.setItem("keywords", JSON.stringify(keywords));
+            }
+        }
+
+            //キーワードをテーブルからロード
+            // function loadKeywords(){
+            //     var keywords = JSON.parse(localStorage.getItem("keywords")) || [];
+            //     var table = document.getElementById("keywordTable");
+
+            //     keywords.forEach(function(keyword){
+            //         var newRow = table.insertRow();
+            //         var cell = newRow.insertCell(0);
+            //         cell.textContent = keyword;
+
+            //         //ドラッグ＆ドロップ用に属性を追加
+            //         newRow.setAttribute("draggable", "true");
+            //         newRow.setAttribute("ondragstart", "dragStart(event)");
+
+            //         //完了ボタンの追加
+            //         var completeCell = newRow.insertCell(1);
+            //         var completeButton = document.createElement("button");
+            //         completeButton.textContent = "完了";
+            //         completeButton.classList.add("complete-button");
+            //         completeButton.onclick = function () {
+            //             markComplete(this);
+            //         };
+            //         completeCell.appendChild(completeButton);
+
+            //         // 削除ボタンを追加
+            //         var deleteCell = newRow.insertCell(2);
+            //         var deleteButton = document.createElement("button");
+            //         deleteButton.textContent = "×";
+            //         deleteButton.classList.add("delete-button");
+            //         deleteButton.onclick = function () {
+            //             deleteRow(this);
+            //         };
+            //         deleteCell.appendChild(deleteButton);
+            //     });
+
+            // }
+
+            //完了ボタンの処理
+            function markComplete(button){
+                //ボタンがクリックされた際にそのボタンがどの行に属しているかを特定
+                var row = button.parentElement.parentElement;
+                //行に取り消し線を追加
+                row.style.textDecoration = "line-through";
+
+                // 完了ボタンと削除ボタンの削除
+                var buttons = row.cells[1].children; // 2番目のセルにある全ての子要素（ボタン）を取得
+                for (var i = 0; i < buttons.length; i++) {
+                    buttons[i].style.display = "none";  // ボタンを全て非表示
+                }
+
+            }
+
+            //テーブルを一気にクリアする関数
+            function clearTable(){
+                var table = document.getElementById("keywordTable");
+                var rows = table.getElementsByTagName("tr");
+
+                while(rows.length > 1){
+                    table.deleteRow(1);
+                }
+                localStorage.removeItem("keywords");
+            }
+
+            //ドラッグ開始時に呼ばれる
+            function dragStart(event){
+                //event.dataTransfer.setData("text", event.target.rowIndex); 
+                //ドラッグイベントが発生したときに、そのドラッグされた要素の rowIndex（行のインデックス）をデータとして保存
+                //event.target.rowIndex :ドラッグされている行のインデックス
+                //これを setData メソッドで保存し、後でその情報を使って行を再配置します。
+                event.dataTransfer.setData("text", event.target.rowIndex);
+            }
+
+            //ドラッグされたアイテムのドロップする位置を決める
+            function allowDrop(event){
+                //event.preventDefault();：
+                //JavaScriptのイベント処理において、ブラウザがそのイベントに対して行うデフォルトの動作をキャンセルするためのメソッド
+                event.preventDefault();
+            }
+
+            // //ドロップ時に順番を入れ替える
+            // function drop(event){
+            //     event.preventDefault();
+            //     //ドラッグした行のインデックスを取得
+            //     var data = event.dataTransfer.getData("text");
+            //     //ドラッグされた行(インデックス番号を使って取得)
+            //     var draggedRow = document.getElementsByTagName("tr")[data];
+            //     //ドロップ先の行を取得
+            //     var targetRow = event.target.closest("tr");
+
+            //     //ドラッグした行がドロップ先行と異なれば並べ替えを実行
+            //     if(draggedRow !== targetRow){
+            //         var table =document.getElementById("keywordTable");
+            //         //ドラッグした行をドロップ先の行の後ろに移動
+            //         table.insertBefore(draggedRow, targetRow.nextSibling);
+            //         //並べ替え後の順序を保存
+            //         saveAllKeywords();
+            //     }
+            // }
+            // function drop(event) {
+            //     event.preventDefault();
+            //     var data = event.dataTransfer.getData("text");
+            //     var draggedRow = document.getElementsByTagName("tr")[data];
+            //     var targetRow = event.target.closest("tr");
+
+            //     // targetRow が存在することを確認
+            //     if (!targetRow || draggedRow === targetRow) return;
+
+            //     var table = document.getElementById("keywordTable");
+            //     var nextSibling = targetRow.nextSibling;
+
+            //     // nextSibling が空白ノードなどの可能性を排除
+            //     while (nextSibling && nextSibling.nodeType !== 1) {
+            //         nextSibling = nextSibling.nextSibling;
+            //     }
+
+            //     if (nextSibling == null) {
+            //         table.appendChild(draggedRow); // 最後に追加
+            //     } else {
+            //         if (draggedRow.rowIndex < targetRow.rowIndex) {
+            //             table.insertBefore(draggedRow, nextSibling); // 次の兄弟の前に挿入
+            //         } else {
+            //             table.insertBefore(draggedRow, targetRow); // targetRowの前に挿入
+            //         }
+            //     }
+
+            //     // 並び順をlocalStorageに保存
+            //     saveAllKeywords();
+            // }
+
+            //すべてのキーワードをlocalStorageに保存
+            // function saveAllKeywords(){
+            //     var keywords = [];
+            //     var rows = document.getElementById("keywordTable").getElementsByTagName("tr");
+            //     for (var i = 1; i < rows.length; i++){
+            //         var keyword = rows[i].cells[0].textContent;
+            //         keywords.push(keyword);
+            //     }
+            //     localStorage.setItem("keywords", JSON.stringify(keywords));
+            // }
+
+                
+
+        </script>
+
+        <style>
+            body{
+                font-family: Arial,sans-serif;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                background-color: #f7f7f7;
+                flex-direction: column;
+            }
+
+            .display{
+                width: 230;
+                height: 50px;
+                margin-bottom: 10px;
+                text-align: right;
+                font-size: 24px;
+                padding: 10px;
+                border-radius: 5px;
+                border: 1px solid #ccc;
+                margin-bottom: 20px;
+                overflow: hidden;
+            }
+
+            .another-button-row {
+                display: flex;
+                justify-content: flex-end;
+                margin-top: 50px;
+                width: 100%;
+            }
+
+            .button{
+                width: 300px;
+                height: 50px;
+                font-size: 20px;
+                background-color: blue;
+                color: white;
+                border: black;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.2s;
+                padding: 10px;
+                margin: 10px;
+            }
+
+            .button:hover{
+                background-color: rgb(0, 0, 212);
+            }
+            
+
+            .button:active{
+                background-color: rgb(0, 0, 155);
+            }
+
+            .another-button{
+                width: 200px;
+                height: 50px;
+                font-size: 20px;
+                background-color: #b3b3b3;
+                color: rgb(0, 0, 0);
+                border: black;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.2s;
+                padding: 10px;
+                margin: 10px;
+            }
+
+            .another-button:hover{
+                background-color: #f0f0f0;
+            }
+
+            .another-button:active{
+                background-color: #a8a8a8;
+            }
+
+            .todo-container{
+                background-color: #fff;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                padding: 20px;
+                width: 300px;
+                max-width: 100%;
+            }
+
+            .todo-container h2{
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            input[type = "text"]{
+                width: calc(100%-40px);
+                padding: 10px;
+                margin-bottom: 10px;
+                font-size: 16px;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+                display: inline-block;
+            }
+
+            input[type="text"]:focus{
+                border-color: aqua;
+                background-color: #ececec;
+                box-shadow: 0 4px 8px rgba(0, 128, 0, 0.3);
+            }
+
+            table{
+                width: 80%;
+                /*border-collapse: collapse;*/
+                border-collapse: separate;
+                border-spacing: 10px; /* セル間のスペースを10pxに設定 */
+                margin: 20px auto;
+            }
+
+            th, td{
+                padding: 15px;
+                text-align: center;
+                border: 1px solid #ddd;
+            }
+
+            th{
+                background-color: aquamarine;
+                color: black;
+                font-size: 15px;
+            }
+
+            tr:nth-child(even){
+                background-color: #f2f2f2;
+            }
+
+            tr:hover{
+                background-color: #ddd;
+            }
+
+            td{
+                font-size: 16px;
+            }
+
+            .todo-list{
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .todo-item{
+                display: flex;
+                justify-content:  space-between;
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
+                align-items: center;
+            }
+
+            /*テーブルタイトル・説明*/
+            caption{
+                font-size: 24px;
+                margin-bottom: 10px;
+                font-weight: bold;
+            }
+
+            .todo-item span{
+                flex-grow: 1;
+            }
+
+            .delete-button{
+                background-color: #d9534f;
+                color: white;
+                border: black;
+                border-radius: 4px;
+                padding: 5px 10px;
+                cursor: pointer;
+            }
+
+            .delete-button:hover{
+                background-color: #c9302c;
+            }
+
+            .delete-button:active{
+                background-color: #991410;
+            }
+        </style>
+        
+
+    </head>
+    <body>
+        
+        <h1 style = "color:aqua; text-align: center;">TodoList</h1>
+        <form onsubmit = "addKeywordToDoList(event)">
+            <label for = "keyword">やること：</label>
+            <input type = "text" id = "keyword" name = "keyword" placeholder = "やることを入力">
+      
+        <button class = "button" type = "submit">追加</button>
+            
+        </form>
+
+        <h2>やることリスト</h2>
+        <table id = "keywordTable" border = "1" ondrop = "drop(event)" ondragover = "allowDrop(event)">
+            <thead>
+                <tr>
+                    <th>やることリスト</th>
+                    <th>完了</th>
+                    <th>削除</th>
+                </tr>
+            </thead>
+        </table>
+        <button class = "button" onclick = "clearTable()">すべてのリストを削除</button>
+
+        <div class = "another-button-row">
+            <button class = "another-button" onclick = "location.href = 'index.html';">最初の画面に戻る</button>
+        </div>
+       
+        
+    </body>
+</html>

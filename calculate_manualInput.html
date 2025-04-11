@@ -1,0 +1,398 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電卓(手入力)</title>
+    <script>
+        //計算結果をloadStorageから取得して表示
+        window.onload = function(){
+            loadResult();
+        };
+
+        let rowCount = 0;   //番号を管理する変数
+        //計算結果をテーブルに追加する関数
+        function addResultToTable(event){
+            //計算結果を取得
+            var result  = document.getElementById("display").value;
+
+            //計算結果が空でないとき
+            if(result.trim()!==""){
+                var table = document.getElementById("resultTable");
+                var newRow = table.insertRow();
+                
+                //番号セルを追加
+                var numberCell = newRow.insertCell(0);
+                rowCount++;
+                numberCell.textContent = rowCount;  //番号を表示
+                
+                //計算結果を表示するセル
+                var cell = newRow.insertCell(1);
+                cell.textContent = result; //結果を表示
+
+                //削除ボタンを追加
+                var deleteCell = newRow.insertCell(2);
+                var deleteButton = document.createElement("button");
+                deleteButton.textContent = "×";
+                deleteButton.classList.add("delete-button");
+                deleteButton.onclick = function (){
+                    deleteRow(this);
+                };
+                //セルに削除ボタンを追加
+                deleteCell.appendChild(deleteButton);
+
+                //再利用ボタンを追加
+                var reuseCell = newRow.insertCell(3);
+                var reuseButton = document.createElement("button");
+                reuseButton.textContent= "再利用";
+                reuseButton.classList.add("reuse-button");
+                reuseButton.onclick = function(){   //再利用のボタンをクリック
+                    reuseResult(result);
+                };
+                //セルに再利用のボタンを追加
+                reuseCell.appendChild(reuseButton);
+
+                //キーワードをlocalStorageに保存
+                saveResult(result);
+                
+
+                //計算結果の入力フィールドを空
+                document.getElementById("display").value = "";
+            }else{
+                alert("式を入力してください");
+            }
+            event.preventDefault();
+        }
+
+        //計算結果をlocalStorageに保存
+        function saveResult(result){
+            var results = JSON.parse(localStorage.getItem("results")) || [];
+            results.push(result);
+            localStorage.setItem("results", JSON.stringify(results));
+        }
+
+        //計算結果をテーブルから削除
+        function deleteRow(button){
+            var row = button.parentElement.parentElement; //行を取得
+            console.log(row);
+            //削除する計算結果を業の一番目のセルrow.cell[0]から取得
+            var result = row.cells[1].textContent;
+            //console.log(result);
+            //指定した子ノードをDOMから取り除く関数
+            row.parentElement.removeChild(row);
+
+            //localStorageから削除
+            var results = JSON.parse(localStorage.getItem("results")) || [];
+            var index = results.indexOf(result);
+
+            if(index !== -1){
+                results.splice(index, 1);
+                localStorage.setItem("results", JSON.stringify(results));
+            }
+
+            //削除後に番号を再調整
+            rowCount--;
+            updateRowNumbers();
+        }
+
+        //ページが読み込まれたときにlocalSorageから計算結果を読み込む
+        function loadResult(){
+            var results = JSON.parse(localStorage.getItem("results")) || [];
+            var table = document.getElementById("resultTable");
+
+            results.forEach(function(result){
+                var newRow = table.insertRow();
+                var numberCell = newRow.insertCell(0);
+                numberCell.textContent = ++rowCount;    //番号を表示
+
+                var resultCell = newRow.insertCell(1);
+                resultCell.textContent = result;
+
+                // 削除ボタンを追加
+                var deleteCell = newRow.insertCell(2);  //2番目のセルを追加
+                var deleteButton = document.createElement("button");    //buttonタグを作成
+                deleteButton.textContent = "×";
+                deleteButton.classList.add("delete-button");    //ボタンにクラスを追加
+                deleteButton.onclick = function () {
+                    deleteRow(this);    //ボタンクリック時に行を削除
+                };
+                deleteCell.appendChild(deleteButton);   //セルにボタンを追加
+
+                //再利用ボタンを追加
+                var reuseCell = newRow.insertCell(3);   //3番目のセルを追加
+                var reuseButton = document.createElement("button");
+                reuseButton.textContent = "再利用";
+                reuseButton.classList.add("reuse-button");
+                reuseButton.onclick = function () {
+                    reuseResult(result);
+                };
+                reuseCell.appendChild(reuseButton);            
+            });
+        }
+        
+
+        //番号を更新する関数
+        function updateRowNumbers(){
+            var table = document.getElementById("resultTable");
+            var rows = table.getElementsByTagName("tr");
+            for (let i = 1; i < rows.length; i++){
+                rows[i].cells[0].textContent = i;   //番号を再設定
+            }
+        }
+
+        //テーブルをクリア
+        function clearTable(){
+            var table = document.getElementById("resultTable");
+            var rows = table.getElementsByTagName("tr");
+
+            while(rows.length>1){
+                table.deleteRow(1);
+            }
+            //localStorageからキーワードを削除
+            localStorage.removeItem("results");
+            //番号をリセット
+            rowCount = 0;
+
+        }
+        //表示エリアに追加する関数
+        function appendToDisplay(value){
+            document.getElementById(`display`).value += value;
+        }
+
+        //計算結果を表示する関数
+        function calculateResult(){
+            const display = document.getElementById('display');
+            try{
+                //計算式を評価して結果を表示
+                display.value = eval(display.value);
+            }
+            catch(e){   //無効な式の場合
+                display.value ='エラー'
+            }
+        }
+
+        //表示をクリアする関数
+        function clearDisplay(){
+            document.getElementById('display').value = '';
+        }
+
+        //キーボード入力に対応するイベントリスナー
+        document.addEventListener('keydown' , function(event){
+            const key = event.key;
+
+            //許可されたキーを定義
+            const validKeys = ['0','1','2','3','4','5','6','7','8','9','+','-','*','/','.','Enter','Backspace'];
+
+            //キーが許可されていれば動作
+            if(validKeys.includes(key)){
+                if(key == 'Enter'){
+                    calculateResult();  //Enterで計算
+                    event.preventDefault(); //Enterキーでフォーム送信されるのを防ぐ
+                    addResultToTable(event);//キーワードを追加する関数を呼び出す
+                }else if(key=='Backspace'){
+                    clearDisplay();  //Backspaceで表示をクリア
+                }else{
+                    appendToDisplay(key);  //数字や演算子を追加
+                }
+            }
+        });
+
+        //再生ボタンをクリックしたときの処理
+        function reuseResult(result){
+            var display = document.getElementById("display");
+            display.value = result; //計算結果を入力欄に設定
+
+            //再利用後，入力フィールドが行こうになる
+            display.disabled = false;
+        }
+
+
+    </script>
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f7f7f7;
+        }
+
+        .calculator{
+            border: 2px solid #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .display{
+            width: 230px;
+            height: 50px;
+            margin-bottom: 10px;
+            text-align: right;
+            font-size: 24px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            overflow: hidden;   /*文字がフィール外に出ないように*/
+        }
+
+        .Button-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 50px;
+            width: 100%;
+        }
+
+
+        /*ボタンを中央ぞろえにする*/
+        .button-center{
+            text-align: center;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button{
+            width: 200px;
+            height: 50px;
+            font-size: 20px;
+            background-color: #b3b3b3;
+            color: rgb(0, 0, 0);
+            border: black;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            padding: 10px;
+            margin: 10px;
+        }
+
+        .button:hover{
+            background-color: #f0f0f0;
+        }
+
+        .button:active{
+            background-color: #a8a8a8;
+        }
+
+        /*削除ボタン*/
+        .delete-button{
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            background-color: #969696;
+            color:rgb(0, 0, 0);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 10px;
+            margin: 10px;
+        }
+        .delete-button:hover{
+            background-color: #ff6b6b;
+        }
+        .delete-button:active{
+            background-color: #ff0000;
+        }
+
+        /*再利用ボタン*/
+
+        .reuse-button{
+            width: 80px;
+            height: 50px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 10px;
+            margin: 10px;
+        }
+        .reuse-button:hover{
+            background-color: #45a049;
+        }
+        .reuse-button:active{
+            background-color: #388e3c;
+        }
+
+        p{
+            margin: 0;
+        }
+
+        /*リストCSS*/
+        input[type="text"]:focus {
+            border-color: #008C00;
+            background-color: #e0f7fa;
+            box-shadow: 0 4px 8px rgba(0, 128, 0, 0.3);
+        }
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: green;
+            font-size: 18px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        td {
+            font-size: 16px;
+        }
+        
+
+    </style>
+</head>
+<body>
+    <h1 style="color:red; text-align:center;">手入力電卓</h1>
+    <p style="text-align:center;">Enter：計算</p>
+    <p style="text-align:center;">Backspace：表示をクリア</p>
+    
+    
+    <!--行間をあける-->
+    <p style="margin-bottom: 20px;"></p>
+    
+    <h2>計算入力</h2>
+    <form onsubmit = "addResultToTable(event);">
+        <label for = "display" border="1"></label>
+        <div class="calculator">
+            <input type="text" id="display" class="display" readonly />
+        </div>
+    </form>
+
+    <h3>計算結果</h3>
+    <table id ="resultTable" border="1">
+        <thead>
+            <tr>
+                <th>番号</th>
+                <th>計算結果</th>
+                <th>操作</th>
+                <th>再利用</th>
+            </tr>
+        </thead>
+    </table>
+    
+    <div class="button-row">
+        <button class = "button" onclick = "clearTable()">テーブルをクリア</button>
+    </div>
+    <div class="Button-row">
+        <button class="button" onclick = "location.href = 'index.html';">最初の画面に戻る</button>
+    </div>
+    
+
+</body>
+</html>
